@@ -1,0 +1,256 @@
+#_all_default_courts---
+include:
+  - docassemble.AssemblyLine:al_package.yml
+  - docassemble.MassAccess:massaccess.yml
+---
+metadata:
+  title: |
+    Snap Replacement for Food Loss
+  short title: |
+    SNAP Replacement
+  tags:
+    - BE-00-00-00-00
+---
+mandatory: True
+comment: |
+  This contains metadata that will not be overwritten if this YAML file is included in another
+  file. Each file gets its own key in the interview_metadata dictionary.
+  Most keys are not currently used at runtime, other than "allowed courts".
+code: |
+  interview_metadata
+  if not defined("interview_metadata['SNAP_Replacement']"):
+    interview_metadata.initializeObject("SNAP_Replacement")
+    interview_metadata["SNAP_Replacement"].update({
+      "al_weaver_version": "0.81",
+      "generated on": "2021-04-29",
+      "title": "Snap Replacement for Food Loss",
+      "short title": "SNAP Replacement",
+      "description": "This tool is used to help you file the SNAP-9B form.",
+      "original_form": "",
+      "allowed courts": [
+      ],
+      "categories": [
+        "BE-00-00-00-00",
+      ],        
+      "logic block variable": "interview_order_SNAP_Replacement",
+      "attachment block variable": "SNAP_Replacement_attachment",
+      "typical role": "plaintiff",
+    })
+---
+code: |
+  interview_short_title = "Get Replacement SNAP Benefits"
+---
+code: |
+  al_form_type = 'other'
+---
+objects:
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+---
+sections:
+  - review_SNAP_Replacement: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_SNAP_Replacement
+code: |
+  # Set the allowed courts for this interview
+  allowed_courts = interview_metadata["SNAP_Replacement"]["allowed courts"]
+  nav.set_section('review_SNAP_Replacement')
+  user_role = 'plaintiff'
+  Screen_one
+  Screen_two
+  Screen_three
+  set_progress(25.0)
+  Screen_four
+  clientID_or_SSN
+  loss_value
+  set_progress(50.0)
+  interview_order_SNAP_Replacement = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  SNAP_Replacement_intro
+  interview_order_SNAP_Replacement
+  signature_date
+  # Save anonymized interview statistics (customize the saved data below)
+  store_variables_snapshot(data={'zip': users[0].address.zip})
+  SNAP_Replacement_preview_question
+  basic_questions_signature_flow
+  SNAP_Replacement_download
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Snap_Replacement_for_Food_Loss
+continue button field: SNAP_Replacement_intro
+question: |
+  Snap Replacement for Food Loss
+subquestion: |
+  This tool is used to help you file the SNAP-9B form.
+---
+id: Screen one
+question: |
+  First Things First
+subquestion: |
+  If you lost food that you bought with your SNAP benefits because of a fire, flood, loss of electricity,broken refrigerator or freezer, or other disaster, the Department of Transitional Assistance (DTA) may be able to replace your SNAP benefits. 
+  
+  The most DTA can replace is one month of SNAP.
+continue button field: Screen_one
+---
+id: Screen two
+question: |
+  First Things First
+subquestion: |
+  DTA must get this form within 10 days after you reported the loss of food. If you submit this form within 10 days of the food loss, you do not need to make a separate report first.
+continue button field: Screen_two
+---
+id: Screen three
+question: |
+ First Things First
+subquestion: |
+  You can report the loss by phone or in writing (must report within 10 days of the food loss). If you get cash benefits, call your case manager. If you only get SNAP, call 1‐877‐382‐2363.  
+  
+  You can also fax your report to 6178878765 or mail it to DTA Document Processing Center, P.O. Box 4406, Taunton, MA 02780.
+  
+  Here's a free tool you can use to fax the completed form to the DTA online: https://faxzero.com/
+#future project: turn this into a hyperlink
+continue button field: Screen_three
+---
+id: Screen four
+question: |
+  First Things First
+subquestion: |
+  DTA will confirm what happened by contacting a third party or visiting your home and will issue replacement SNAP if you are eligible.
+  
+  DTA must issue replacement SNAP quickly:  either within 10 days of getting your report of the food loss, or within 2 business days of getting the completed form, whichever is later.
+continue button field: Screen_four
+---
+id: Let s gather some basic information about you
+question: |
+  Let's gather some basic information about you.
+fields:
+  - "Provide your Client ID or the last 4 numbers of your SSN": clientID_or_SSN
+  - code: |
+      users[0].name_fields()
+
+  - "Todays date": date_today
+  - "Your Address": address
+  - "Your phone number": phone_number
+---
+id: Now some information about the food loss
+question: |
+  Now some information about the food loss.
+fields:
+  - "What was the total value of the lost food purchased with your SNAP benefits?": loss_value
+
+  - "When did the loss happen?": date_of_misfortune
+
+  - "Please describe the household disaster or misfortune that led to the food loss.": description
+  
+
+---
+id: preview SNAP_Replacement
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_user_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Make changes" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_" + interview_label + "'), label='Make changes', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: SNAP_Replacement_preview_question    
+---
+id: SNAP Replacement review screen
+event: review_SNAP_Replacement
+question: |
+  Review your answers
+review:
+  - Edit: clientID_or_SSN
+    button: |
+      **Provide your Client ID or the last 4 numbers of your SSN**:
+      ${ clientID_or_SSN }
+  - Edit: client_name
+    button: |
+      **Provide your full name**:
+      ${ client_name }
+  - Edit: date_today
+    button: |
+      **Todays date**:
+      ${ date_today }
+  - Edit: address
+    button: |
+      **Your Address**:
+      ${ address }
+  - Edit: phone_number
+    button: |
+      **Your phone number**:
+      ${ phone_number }
+  - Edit: loss_value
+    button: |
+      **What was the total value of the lost food purchased with your SNAP benefits?**:
+      ${ loss_value }
+  - Edit: date_of_misfortune
+    button: |
+      **When did the loss happen?**:
+      ${ date_of_misfortune }
+  - Edit: description
+    button: |
+      **Describe the household disaster or misfortune that led to the food loss.**:
+      ${ description }
+  - Edit: date_today_again
+    button: |
+      **Provide the date when the signature was made**:
+      ${ date_today_again }
+---
+id: download SNAP_Replacement
+event: SNAP_Replacement_download
+question: |
+  Your form is ready to download.
+subquestion: |
+  
+  Thank you ${users}. Your form is ready to download and deliver.
+
+  View, download and send your form below. Click the "Make changes" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_" + interview_label + "'), label='Make changes', color='info') }
+
+  ${ al_user_bundle.download_list_html() }
+
+  ${ al_user_bundle.send_button_html() }
+  
+progress: 100
+---
+objects:
+  - SNAP_Replacement_attachment: ALDocument.using(title="This tool is used to help you file the SNAP-9B form.", filename="SNAP_Replacement.pdf", enabled=True, has_addendum=False)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[SNAP_Replacement_attachment], filename="SNAP_Replacement.pdf", title="All forms to download for your records")
+  - al_court_bundle: ALDocumentBundle.using(elements=[SNAP_Replacement_attachment], filename="SNAP_Replacement.pdf", title="All forms to download for your records")
+---
+attachment:
+  variable name: SNAP_Replacement_attachment[i]
+  name: SNAP_Replacement_attachment
+  filename: SNAP-Replacement
+  skip undefined: True
+  pdf template file: SNAP_Replacement.pdf
+  fields:
+      - "clientID_or_SSN": ${ clientID_or_SSN }
+      - "client_name": ${ users }
+      - "date_today": ${ date_today }
+      - "address": ${ address }
+      - "phone_number": ${ phone_number }
+      - "loss_value": ${ loss_value }
+      - "date_of_misfortune": ${ date_of_misfortune }
+      - "description": ${ description }
+      - "date_today_again": ${ today() }
+      - "signature": ${ users[0].signature_if_final(i)}
+     
